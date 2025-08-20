@@ -10,28 +10,32 @@ import com.deaelum.android.weather.network.NetworkResponse
 import com.deaelum.android.weather.network.RetrofitInstance
 import kotlinx.coroutines.launch
 
-class WeatherViewModel: ViewModel() {
+class WeatherViewModel : ViewModel() {
 
-    private val  weatherApi = RetrofitInstance.weatherApi
-    private val _weather = MutableLiveData< NetworkResponse<WeatherModel>>()
+    private val weatherApi = RetrofitInstance.weatherApi
+    private val _weather = MutableLiveData<NetworkResponse<WeatherModel>>()
     val weather: LiveData<NetworkResponse<WeatherModel>> = _weather
 
-    fun getData(city: String){
+    fun getData(city: String) {
         _weather.value = NetworkResponse.Loading
 
         viewModelScope.launch {
             try {
                 val response = weatherApi.getWeather(BuildConfig.API_KEY, city)
 
-                if (response.isSuccessful){
+                if (response.isSuccessful) {
                     response.body()?.let {
                         _weather.value = NetworkResponse.Success(it)
                     }
-                }else{
-                    _weather.value = NetworkResponse.Error("Failed to load data")
+                } else {
+                    _weather.value = NetworkResponse.Error("${response.code()} ${response.message()}")
+
                 }
-            }catch (e: Exception){
-                _weather.value = NetworkResponse.Error("Failed to load data")
+            } catch (e: Exception) {
+                e.message ?: "Error, an exception occurred".let {
+                    _weather.value = NetworkResponse.Error(it)
+                }
+
             }
         }
 
