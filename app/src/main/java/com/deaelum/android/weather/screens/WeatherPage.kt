@@ -1,6 +1,7 @@
 package com.deaelum.android.weather.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,14 +43,14 @@ fun WeatherPage(viewModel: WeatherViewModel) {
 
     var location by remember { mutableStateOf("") }
     val weather = viewModel.weather.observeAsState()
-    val keybordController = LocalSoftwareKeyboardController.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold {paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(8.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
@@ -68,7 +69,7 @@ fun WeatherPage(viewModel: WeatherViewModel) {
 
                 IconButton(onClick = {
                     viewModel.getData(location)
-                    keybordController?.hide()
+                    keyboardController?.hide()
                 }) {
                     Icon(Icons.Default.Search,
                         contentDescription = "Search")
@@ -77,13 +78,20 @@ fun WeatherPage(viewModel: WeatherViewModel) {
 
             when(val result = weather.value){
                 is NetworkResponse.Error -> {
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(text = result.message)
                 }
                 NetworkResponse.Loading -> {
-                    CircularProgressIndicator()
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        CircularProgressIndicator()
+                    }
                 }
                 is NetworkResponse.Success -> {
-                    Text(text = result.data.toString())
+                   // Text(text = result.data.toString())
                     WeatherDetails(result.data)
 
                 }
@@ -101,7 +109,7 @@ fun WeatherDetails(data: WeatherModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -116,12 +124,12 @@ fun WeatherDetails(data: WeatherModel) {
             )
             Text(
                 text = data.location.name,
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineSmall
             )
             Spacer(Modifier.width(5.dp))
             Text(
                 text = data.location.country,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -148,29 +156,35 @@ fun WeatherDetails(data: WeatherModel) {
         Spacer(Modifier.height(16.dp))
 
         Card {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth()
+                .padding(vertical = 16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     WeatherKeyVal("Humidity", data.current.humidity)
-                    WeatherKeyVal("Wind Speed", "${data.current.wind_kph} Km/hr")
+                    WeatherKeyVal("Wind Speed", "${data.current.wind_kph}Km/hr")
                 }
+
+                Spacer(Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     WeatherKeyVal("UV", data.current.uv)
-                    WeatherKeyVal("Precipitation", "${data.current.precip_mm} mm")
+                    WeatherKeyVal("Precipitation", "${data.current.precip_mm}mm")
                 }
+
+                Spacer(Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    WeatherKeyVal("Local Time", data.location.localtime.split("")[1])
-                    WeatherKeyVal("Local Date", data.location.localtime.split("")[0])
+                    val date = data.location.localtime.split(" ")
+                    WeatherKeyVal("Local Time", date[1])
+                    WeatherKeyVal("Local Date", date[0])
                 }
             }
         }
@@ -183,7 +197,7 @@ fun WeatherKeyVal(key: String, value: String) {
         Text(
             text = value,
             fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.titleLarge
         )
         Text(
             text = key,
