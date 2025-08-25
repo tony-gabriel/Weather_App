@@ -28,7 +28,7 @@ class WeatherViewModel : ViewModel() {
                         _weather.value = NetworkResponse.Success(it)
                     }
                 } else {
-                    _weather.value = NetworkResponse.Error("${response.code()} ${response.message()}")
+                    _weather.value = NetworkResponse.Error("${response.code()} Error fetching data")
 
                 }
             } catch (e: Exception) {
